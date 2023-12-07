@@ -1,0 +1,80 @@
+A resolver function populates the data for a 
+field
+
+ in your schema. The function has four parameters. The first, 
+parent
+
+, contains the returned data of the previous function in the 
+resolver chain
+
+. The second, args, is an object that contains all the 
+arguments
+
+ provided to the field. We use the third parameter, 
+contextValue
+
+, to access 
+data sources
+
+ such as a database or REST API. Finally, the fourth parameter, 
+info
+
+, contains informational properties about the operation state.
+
+
+
+
+import type { Resolvers } from "./__generated__/index"
+import { gql } from "graphql-tag"
+
+const typeDefs = gql`
+  type Mutation {
+    assignSpaceship(spaceshipId: ID!, missionId: ID!): AssignSpaceshipResponse
+  }
+
+  type AssignSpaceshipResponse {
+    code: Int!
+    success: Boolean!
+    message: String!
+    spaceship: Spaceship
+    mission: Mission
+  }
+`;
+
+const resolvers: Resolvers = {
+  Mutation: {
+    assignSpaceship: async (_, { spaceshipId, missionId }, {dataSources}) => {
+      const { spaceship, mission } = await dataSources.spaceAPI.assignSpaceshipToMission(spaceshipId, missionId);
+      return {
+        code: 200,
+        success: true,
+        message: `Successfully assigned spaceship ${spaceshipId} to mission ${missionId}`,
+        spaceship: spaceship,
+        mission: mission
+      }
+    }
+  }
+}
+
+We use hooks to send requests to our GraphQL API from a React client. To send a mutation, we use the
+useMutation
+
+ hook. This returns an 
+array
+
+, where the first element is the
+mutate function
+
+ used to trigger the mutation. The second element is an object with more information about the mutation, such as loading, error and 
+data
+
+. This hook takes in a
+GraphQL operation
+
+ as the first parameter. It also takes in an 
+options
+
+object as the second parameter, where properties like 
+variables
+
+are set.
